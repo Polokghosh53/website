@@ -8,38 +8,27 @@ description: >
   Standards.
 content_type: concept
 weight: 20
-min-kubernetes-server-version: v1.22
 ---
 
 <!-- overview -->
 
-{{< feature-state for_k8s_version="v1.22" state="alpha" >}}
+{{< feature-state for_k8s_version="v1.25" state="stable" >}}
 
 The Kubernetes [Pod Security Standards](/docs/concepts/security/pod-security-standards/) define
 different isolation levels for Pods. These standards let you define how you want to restrict the
 behavior of pods in a clear, consistent fashion.
 
-As an Alpha feature, Kubernetes offers a built-in _Pod Security_ {{< glossary_tooltip
-text="admission controller" term_id="admission-controller" >}}, the successor
-to [PodSecurityPolicies](/docs/concepts/policy/pod-security-policy/). Pod security restrictions
-are applied at the {{< glossary_tooltip text="namespace" term_id="namespace" >}} level when pods
-are created.
+Kubernetes offers a built-in _Pod Security_ {{< glossary_tooltip text="admission controller"
+term_id="admission-controller" >}} to enforce the Pod Security Standards. Pod security restrictions
+are applied at the {{< glossary_tooltip text="namespace" term_id="namespace" >}} level when pods are
+created.
 
-{{< note >}}
-The PodSecurityPolicy API is deprecated and will be 
-[removed](/docs/reference/using-api/deprecation-guide/#v1-25) from Kubernetes in v1.25.
-{{< /note >}}
+### Built-in Pod Security admission enforcement
+
+This page is part of the documentation for Kubernetes v{{< skew currentVersion >}}.
+If you are running a different version of Kubernetes, consult the documentation for that release.
 
 <!-- body -->
-
-## Enabling the Alpha feature
-
-Setting pod security controls by namespace is an alpha feature. You must enable the `PodSecurity`
-[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) in order to use it.
-
-```shell
---feature-gates="...,PodSecurity=true"
-```
 
 ## Pod Security levels
 
@@ -52,7 +41,7 @@ page for an in-depth look at those requirements.
 
 ## Pod Security Admission labels for namespaces
 
-Provided that you have enabled this feature, you can configure namespaces to define the admission
+Once the feature is enabled or the webhook is installed, you can configure namespaces to define the admission
 control mode you want to use for pod security in each namespace. Kubernetes defines a set of 
 {{< glossary_tooltip term_id="label" text="labels" >}} that you can set to define which of the 
 predefined Pod Security Standard levels you want to use for a namespace. The label you select
@@ -63,7 +52,7 @@ takes if a potential violation is detected:
 Mode | Description
 :---------|:------------
 **enforce** | Policy violations will cause the pod to be rejected.
-**audit** | Policy violations will trigger the addition of an audit annotation to the event recorded in the [audit log](/docs/tasks/debug-application-cluster/audit/), but are otherwise allowed.
+**audit** | Policy violations will trigger the addition of an audit annotation to the event recorded in the [audit log](/docs/tasks/debug/debug-cluster/audit/), but are otherwise allowed.
 **warn** | Policy violations will trigger a user-facing warning, but are otherwise allowed.
 {{< /table >}}
 
@@ -79,7 +68,7 @@ For each mode, there are two labels that determine the policy used:
 pod-security.kubernetes.io/<MODE>: <LEVEL>
 
 # Optional: per-mode version label that can be used to pin the policy to the
-# version that shipped with a given Kubernetes minor version (for example v{{< skew latestVersion >}}).
+# version that shipped with a given Kubernetes minor version (for example v{{< skew currentVersion >}}).
 #
 # MODE must be one of `enforce`, `audit`, or `warn`.
 # VERSION must be a valid Kubernetes minor version, or `latest`.
@@ -100,7 +89,7 @@ applied to workload resources, only to the resulting pod objects.
 
 ## Exemptions
 
-You can define _exemptions_ from pod security enforcement in order allow the creation of pods that
+You can define _exemptions_ from pod security enforcement in order to allow the creation of pods that
 would have otherwise been prohibited due to the policy associated with a given namespace.
 Exemptions can be statically configured in the
 [Admission Controller configuration](/docs/tasks/configure-pod-container/enforce-standards-admission-controller/#configure-the-admission-controller).

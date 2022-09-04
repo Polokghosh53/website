@@ -48,6 +48,21 @@ with shared namespaces and shared filesystem volumes.
 
 ## Using Pods
 
+The following is an example of a Pod which consists of a container running the image `nginx:1.14.2`.
+
+{{< codenew file="pods/simple-pod.yaml" >}}
+
+To create the Pod shown above, run the following command:
+```shell
+kubectl apply -f https://k8s.io/examples/pods/simple-pod.yaml
+```
+
+Pods are generally not created directly and are created using workload resources.
+See [Working with Pods](#working-with-pods) for more information on how Pods are used
+with workload resources.
+
+### Workload resources for managing pods
+
 Usually you don't need to create Pods directly, even singleton Pods. Instead, create them using workload resources such as {{< glossary_tooltip text="Deployment"
 term_id="deployment" >}} or {{< glossary_tooltip text="Job" term_id="job" >}}.
 If your Pods need to track state, consider the
@@ -97,7 +112,7 @@ For example, you might have a container that
 acts as a web server for files in a shared volume, and a separate "sidecar" container
 that updates those files from a remote source, as in the following diagram:
 
-{{< figure src="/images/docs/pod.svg" alt="example pod diagram" width="50%" >}}
+{{< figure src="/images/docs/pod.svg" alt="Pod creation diagram" class="diagram-medium" >}}
 
 Some Pods have {{< glossary_tooltip text="init containers" term_id="init-container" >}} as well as {{< glossary_tooltip text="app containers" term_id="app-container" >}}. Init containers run and complete before the app containers are started.
 
@@ -122,6 +137,23 @@ it is deleted.
 
 When you create the manifest for a Pod object, make sure the name specified is a valid
 [DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).
+
+### Pod OS
+
+{{< feature-state state="stable" for_k8s_version="v1.25" >}}
+
+You should set the `.spec.os.name` field to either `windows` or `linux` to indicate the OS on
+which you want the pod to run. These two are the only operating systems supported for now by 
+Kubernetes. In future, this list may be expanded.
+
+In Kubernetes v{{< skew currentVersion >}}, the value you set for this field has no
+effect on {{< glossary_tooltip text="scheduling" term_id="kube-scheduler" >}} of the pods.
+Setting the `.spec.os.name` helps to identify the pod OS
+authoratitively and is used for validation. The kubelet refuses to run a Pod where you have
+specified a Pod OS, if this isn't the same as the operating system for the node where
+that kubelet is running.
+The [Pod security standards](/docs/concepts/security/pod-security-standards/) also use this
+field to avoid enforcing policies that aren't relevant to that operating system.
 
 ### Pods and controllers
 
@@ -165,7 +197,7 @@ spec:
     spec:
       containers:
       - name: hello
-        image: busybox
+        image: busybox:1.28
         command: ['sh', '-c', 'echo "Hello, Kubernetes!" && sleep 3600']
       restartPolicy: OnFailure
     # The pod template ends here
@@ -246,8 +278,7 @@ Within a Pod, containers share an IP address and port space, and
 can find each other via `localhost`. The containers in a Pod can also communicate
 with each other using standard inter-process communications like SystemV semaphores
 or POSIX shared memory.  Containers in different Pods have distinct IP addresses
-and can not communicate by IPC without
-[special configuration](/docs/concepts/policy/pod-security-policy/).
+and can not communicate by OS-level IPC without special configuration.
 Containers that want to interact with a container running in a different Pod can
 use IP networking to communicate.
 
@@ -306,12 +337,12 @@ in the Pod Lifecycle documentation.
 * Learn about the [lifecycle of a Pod](/docs/concepts/workloads/pods/pod-lifecycle/).
 * Learn about [RuntimeClass](/docs/concepts/containers/runtime-class/) and how you can use it to
   configure different Pods with different container runtime configurations.
-* Read about [Pod topology spread constraints](/docs/concepts/workloads/pods/pod-topology-spread-constraints/).
 * Read about [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/) and how you can use it to manage application availability during disruptions.
 * Pod is a top-level resource in the Kubernetes REST API.
-  The [Pod](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#pod-v1-core)
+  The {{< api-reference page="workload-resources/pod-v1" >}}
   object definition describes the object in detail.
-* [The Distributed System Toolkit: Patterns for Composite Containers](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns) explains common layouts for Pods with more than one container.
+* [The Distributed System Toolkit: Patterns for Composite Containers](/blog/2015/06/the-distributed-system-toolkit-patterns/) explains common layouts for Pods with more than one container.
+* Read about [Pod topology spread constraints](/docs/concepts/scheduling-eviction/topology-spread-constraints/)
 
 To understand the context for why Kubernetes wraps a common Pod API in other resources (such as {{< glossary_tooltip text="StatefulSets" term_id="statefulset" >}} or {{< glossary_tooltip text="Deployments" term_id="deployment" >}}), you can read about the prior art, including:
 
